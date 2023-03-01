@@ -5,7 +5,8 @@ import random
 
 
 class AudioUtils():
-    def get_audio_file(self, uuid, data_path):
+    @staticmethod
+    def get_audio_file(uuid, data_path):
         results = glob.glob(data_path + uuid + '.*')
         for result in results:
             ext = result.split('.')[1]
@@ -15,15 +16,17 @@ class AudioUtils():
             raise Exception('No audio file found for uuid: {}'.format(uuid))
     
     
-    def load_audio_file(self, uuid):
-        audio_file = self.get_audio_file(uuid)
+    @staticmethod
+    def load_audio_file(uuid, data_path):
+        audio_file = AudioUtils.get_audio_file(uuid, data_path)
         signal, sample_rate = torchaudio.load(audio_file)
         info = torchaudio.info(audio_file)
         
         return signal, sample_rate, info
     
     
-    def resample(self, signal, sample_rate, target_sample_rate):
+    @staticmethod
+    def resample(signal, sample_rate, target_sample_rate):
         if sample_rate == target_sample_rate:
             return signal
         
@@ -33,7 +36,8 @@ class AudioUtils():
         return signal
     
     
-    def rechannel(self, signal, channels):
+    @staticmethod
+    def rechannel(signal, channels):
         if signal.shape[0] == channels:
             return signal
         
@@ -46,7 +50,8 @@ class AudioUtils():
         raise Exception('Cannot convert from {} channels to {} channels'.format(signal.shape[0], channels))
     
     
-    def resize(self, signal, duration, sample_rate):
+    @staticmethod
+    def resize(signal, duration, sample_rate):
         new_length = int(duration * sample_rate)
         singal_length = signal.shape[1]
         
@@ -66,7 +71,8 @@ class AudioUtils():
             return signal
     
     
-    def get_spectrogram(self, signal, sample_rate, n_mels=64, n_fft=1024, top_db=80):
+    @staticmethod
+    def get_spectrogram(signal, sample_rate, n_mels=64, n_fft=1024, top_db=80):
         spectrogram = torchaudio.transforms.MelSpectrogram(sample_rate=sample_rate, n_mels=n_mels, n_fft=n_fft)(signal)
         spectrogram = torchaudio.transforms.AmplitudeToDB(top_db=top_db)(spectrogram)
         

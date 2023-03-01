@@ -23,14 +23,14 @@ class CovidCoughAudio(Dataset):
     def __getitem__(self, index):
         row = self.df.iloc[index]
 
-        signal, sample_rate, info = AudioUtils.load_audio_file(row['uuid'])
+        signal, sample_rate, info = AudioUtils.load_audio_file(row['uuid'], self.data_path)
         
         signal = AudioUtils.resample(signal, sample_rate, self.sample_rate)
         signal = AudioUtils.rechannel(signal, self.channels)
 
         signal = AudioUtils.resize(signal, self.duration, self.sample_rate)
 
-        spectrogram = AudioUtils.spectrogram(signal, self.sample_rate)
+        spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate)
         # TODO: Add augmentation
         
         label_id = self.label_encoder.transform([row['status']])[0]
