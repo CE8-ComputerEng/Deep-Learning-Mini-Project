@@ -160,3 +160,9 @@ cython_debug/
 #.idea/
 
 data/
+.idea/vcs.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/inspectionProfiles/Project_Default.xml
+*.xml
+*.iml
