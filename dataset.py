@@ -1,7 +1,12 @@
 import glob
-import torch
-import torchaudio
 import random
+import pandas as pd
+import torch
+from torch import nn
+from torch.utils.data import Dataset, DataLoader, random_split
+import torchaudio
+import pytorch_lightning as pl
+from sklearn import preprocessing
 
 
 class AudioUtils():
@@ -77,4 +82,38 @@ class AudioUtils():
         spectrogram = torchaudio.transforms.AmplitudeToDB(top_db=top_db)(spectrogram)
         
         return spectrogram
+
+
+class CoughDataset(Dataset):
+    def __init__(self, df, data_path):
+        super().__init__()
         
+        self.df = df
+        self.data_path = data_path
+        
+        self.duration = 10.0
+        self.sample_rate = 48000
+        self.channels = 1
+        
+        self.label_encoder = preprocessing.LabelEncoder()
+        self.label_encoder.fit(self.df['status'])
+        
+    def __len__(self) -> int:
+        return len(self.df)
+    
+    def __getitem__(self, index):
+        row = self.df.iloc[index]
+
+        signal, sample_rate, info = AudioUtils.load_audio_file(row['uuid'], self.data_path)
+        
+        signal = AudioUtils.resample(signal, sample_rate, self.sample_rate)
+        signal = AudioUtils.rechannel(signal, self.channels)
+
+        signal = AudioUtils.resize(signal, self.duration, self.sample_rate)
+
+        spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate)
+        # TODO: Add augmentation
+        
+        label_id = self.label_encoder.transform([row['status']])[0]
+        
+        return spectrogram, label_id
