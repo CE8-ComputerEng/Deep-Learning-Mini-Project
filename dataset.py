@@ -7,6 +7,7 @@ from torch.utils.data import Dataset, DataLoader, random_split
 import torchaudio
 import pytorch_lightning as pl
 from sklearn import preprocessing
+import wandb
 
 
 class AudioUtils():
@@ -111,7 +112,7 @@ class CoughDataset(Dataset):
 
         signal = AudioUtils.resize(signal, self.duration, self.sample_rate)
 
-        spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate)
+        spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate, n_mels = wandb.config['mel_nr'])
         # TODO: Add augmentation
         
         label_id = self.label_encoder.transform([row['status']])[0]
