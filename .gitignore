@@ -166,3 +166,5 @@ data/
 .idea/inspectionProfiles/Project_Default.xml
 *.xml
 *.iml
+
+lightning_logs/

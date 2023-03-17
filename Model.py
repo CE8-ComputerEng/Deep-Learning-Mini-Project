@@ -72,7 +72,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def training(model, train_dl, num_epochs):
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)  # TODO: Add learning rate to WandB config
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)  # TODO: Add learning rate to WandB config and optimizers
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001, steps_per_epoch=len(train_dl), epochs=num_epochs, anneal_strategy='linear')
 
     for epoch in range(num_epochs):
