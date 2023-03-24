@@ -85,15 +85,27 @@ class AudioUtils():
 
 
 class CoughDataset(Dataset):
-    def __init__(self, df, data_path):
+    def __init__(self, 
+                 df, 
+                 data_path,
+                 duration=10.0,
+                 sample_rate=48000,
+                 channels=1,
+                 n_mels=64,
+                 n_fft=1024, 
+                 top_db=80):
         super().__init__()
         
         self.df = df
         self.data_path = data_path
         
-        self.duration = 10.0
-        self.sample_rate = 48000
-        self.channels = 1
+        self.duration = duration
+        self.sample_rate = sample_rate
+        self.channels = channels
+        
+        self.n_mels = n_mels
+        self.n_fft = n_fft
+        self.top_db = top_db
         
         self.label_encoder = preprocessing.LabelEncoder()
         self.label_encoder.fit(self.df['status'])
@@ -111,7 +123,7 @@ class CoughDataset(Dataset):
 
         signal = AudioUtils.resize(signal, self.duration, self.sample_rate)
 
-        spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate)
+        spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate, self.n_mels, self.n_fft, self.top_db)
         # TODO: Add augmentation
         
         label_id = self.label_encoder.transform([row['status']])[0]
