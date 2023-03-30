@@ -93,7 +93,7 @@ class AudioUtils():
     
     
     @staticmethod
-    def spectrogram_augment(spectrogram, masking_val:str|int|float='min', n_freq_masks=1, n_time_masks=1, max_mask_pct=0.1):
+    def spectrogram_augment(spectrogram, masking_val='min', n_freq_masks=1, n_time_masks=1, max_mask_pct=0.1):
         _, n_mels, n_frames = spectrogram.shape
         aug_spectrogram = spectrogram.clone()
         
@@ -173,8 +173,8 @@ class CoughDataset(Dataset):
 
         signal = AudioUtils.resize(signal, self.duration, self.sample_rate)
 
-        spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate, self.n_mels, self.n_fft, self.top_db)
-        spectrogram = AudioUtils.spectrogram_augment(spectrogram)
+        spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate, self.spectrogram_type, self.n_mels, self.n_fft, self.top_db)
+        spectrogram = AudioUtils.spectrogram_augment(spectrogram, self.augment_masking_val, self.n_freq_masks, self.n_time_masks, self.max_mask_pct)
         
         label_id = self.label_encoder.transform([row['status']])[0]
         
