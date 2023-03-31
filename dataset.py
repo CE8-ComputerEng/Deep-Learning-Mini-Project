@@ -1,3 +1,4 @@
+import os
 import glob
 import random
 import pandas as pd
@@ -12,7 +13,7 @@ from sklearn import preprocessing
 class AudioUtils():
     @staticmethod
     def get_audio_file(uuid, data_path):
-        results = glob.glob(data_path + uuid + '.*')
+        results = glob.glob(os.path.join(data_path, uuid + '.*'))
         for result in results:
             ext = result.split('.')[1]
             if ext in ['ogg', 'webm']:
@@ -93,7 +94,7 @@ class AudioUtils():
     
     
     @staticmethod
-    def spectrogram_augment(spectrogram, masking_val='min', n_freq_masks=1, n_time_masks=1, max_mask_pct=0.1):
+    def spectrogram_masking(spectrogram, masking_val='min', n_freq_masks=1, n_time_masks=1, max_mask_pct=0.1):
         _, n_mels, n_frames = spectrogram.shape
         aug_spectrogram = spectrogram.clone()
         
@@ -118,36 +119,16 @@ class AudioUtils():
         for _ in range(n_time_masks):
             aug_spectrogram = torchaudio.transforms.TimeMasking(time_mask_param)(aug_spectrogram, masking_val)
             
-        return aug_spectrogram  
-
+        return aug_spectrogram
 
     @staticmethod
-    def spectrogram_augment(spectrogram, masking_val='min', n_freq_masks=1, n_time_masks=1, max_mask_pct=0.1):
-        _, n_mels, n_frames = spectrogram.shape
-        aug_spectrogram = spectrogram.clone()
+    def signal_pitch_shift(signal, sample_rate, pitch_max_value):
+        n_steps = random.randint(-pitch_max_value, pitch_max_value)
+        
+        sug_signal = torchaudio.transforms.PitchShift(n_steps=n_steps, sample_rate=sample_rate)(signal)
+        
+        return sug_signal
 
-        if masking_val == 'min':
-            masking_val = aug_spectrogram.min()
-        elif masking_val == 'max':
-            masking_val = aug_spectrogram.max()
-        elif masking_val == 'mean':
-            masking_val = aug_spectrogram.mean()
-        elif masking_val == 'median':
-            masking_val = aug_spectrogram.median()
-        elif masking_val == 'random':
-            masking_val = random.random() * (aug_spectrogram.max() - aug_spectrogram.min()) + aug_spectrogram.min()
-        elif type(masking_val) == int or type(masking_val) == float:
-            masking_val = torch.tensor(masking_val)
-
-        freq_mask_param = int(n_mels * max_mask_pct)
-        for _ in range(n_freq_masks):
-            aug_spectrogram = torchaudio.transforms.FrequencyMasking(freq_mask_param)(aug_spectrogram, masking_val)
-
-        time_mask_param = int(n_frames * max_mask_pct)  
-        for _ in range(n_time_masks):
-            aug_spectrogram = torchaudio.transforms.TimeMasking(time_mask_param)(aug_spectrogram, masking_val)
-
-        return aug_spectrogram 
 
 class CoughDataset(Dataset):
     def __init__(self, 
@@ -160,6 +141,7 @@ class CoughDataset(Dataset):
                  n_mels=64,
                  n_fft=1024, 
                  top_db=80,
+                 pitch_shift_value=5,
                  augment_masking_val='min',
                  n_freq_masks=2,
                  n_time_masks=1,
@@ -177,6 +159,8 @@ class CoughDataset(Dataset):
         self.n_mels = n_mels
         self.n_fft = n_fft
         self.top_db = top_db
+        
+        self.pitch_shift_value = pitch_shift_value
         
         self.augment_masking_val = augment_masking_val
         self.n_freq_masks = n_freq_masks
@@ -201,9 +185,11 @@ class CoughDataset(Dataset):
         signal = AudioUtils.rechannel(signal, self.channels)
 
         signal = AudioUtils.resize(signal, self.duration, self.sample_rate)
+        
+        signal = AudioUtils.signal_pitch_shift(signal, self.sample_rate, self.pitch_shift_value)
 
         spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate, self.spectrogram_type, self.n_mels, self.n_fft, self.top_db)
-        spectrogram = AudioUtils.spectrogram_augment(spectrogram, self.augment_masking_val, self.n_freq_masks, self.n_time_masks, self.max_mask_pct)
+        spectrogram = AudioUtils.spectrogram_masking(spectrogram, self.augment_masking_val, self.n_freq_masks, self.n_time_masks, self.max_mask_pct)
         
         label_id = self.label_encoder.transform([row['status']])[0]
         
