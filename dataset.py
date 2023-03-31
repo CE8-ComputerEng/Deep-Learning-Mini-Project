@@ -83,7 +83,7 @@ class AudioUtils():
             spectrogram = torchaudio.transforms.AmplitudeToDB(top_db=top_db)(spectrogram)
 
         elif type == 'power-spectrogram':
-            spectrogram = torchaudio.transforms.Spectrogram(power=2.0, n_fft=n_fft)(signal)
+            spectrogram = torchaudio.transforms.Spectrogram(power=2.0, n_fft=n_fft, hop_length=n_mels)(signal)
             spectrogram = torchaudio.transforms.AmplitudeToDB(top_db=top_db)(spectrogram)
 
         else:
@@ -127,13 +127,14 @@ class CoughDataset(Dataset):
                  duration=10.0,
                  sample_rate=48000,
                  channels=1,
+                 spectrogram_type='mel-spectrogram',
                  n_mels=64,
                  n_fft=1024, 
                  top_db=80,
+                 augment_masking_val='min',
                  n_freq_masks=2,
                  n_time_masks=1,
-                 max_mask_pct=0.1,
-                 augment=False):
+                 max_mask_pct=0.1):
         super().__init__()
         
         self.df = df
@@ -143,21 +144,19 @@ class CoughDataset(Dataset):
         self.sample_rate = sample_rate
         self.channels = channels
         
-        self.spectrogram_type = 'mel-spectrogram'
-        
+        self.spectrogram_type = spectrogram_type
         self.n_mels = n_mels
         self.n_fft = n_fft
         self.top_db = top_db
         
-        self.augment = augment
-        self.augment_masking_val = 'min'
+        self.augment_masking_val = augment_masking_val
         self.n_freq_masks = n_freq_masks
         self.n_time_masks = n_time_masks
         self.max_mask_pct = max_mask_pct
+        
         self.label_encoder = preprocessing.LabelEncoder()
         self.label_encoder.fit(self.df['status'])
-        self.class_counts = self.df['status'].value_counts().to_dict()
-
+        self.num_class = len(self.label_encoder.classes_)
         
     def __len__(self) -> int:
         return len(self.df)
@@ -173,8 +172,7 @@ class CoughDataset(Dataset):
         signal = AudioUtils.resize(signal, self.duration, self.sample_rate)
 
         spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate, self.spectrogram_type, self.n_mels, self.n_fft, self.top_db)
-        if self.augment:
-            spectrogram = AudioUtils.spectrogram_augment(spectrogram, self.augment_masking_val, self.n_freq_masks, self.n_time_masks, self.max_mask_pct)
+        spectrogram = AudioUtils.spectrogram_augment(spectrogram, self.augment_masking_val, self.n_freq_masks, self.n_time_masks, self.max_mask_pct)
         
         label_id = self.label_encoder.transform([row['status']])[0]
         
