@@ -83,7 +83,7 @@ class AudioUtils():
             spectrogram = torchaudio.transforms.AmplitudeToDB(top_db=top_db)(spectrogram)
         
         elif type == 'power-spectrogram':
-            spectrogram = torchaudio.transforms.Spectrogram(power=2.0, n_fft=n_fft)(signal)
+            spectrogram = torchaudio.transforms.Spectrogram(power=2.0, n_fft=n_fft, hop_length=n_mels)(signal)
             spectrogram = torchaudio.transforms.AmplitudeToDB(top_db=top_db)(spectrogram)
             
         else:
