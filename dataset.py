@@ -121,6 +121,34 @@ class AudioUtils():
         return aug_spectrogram  
 
 
+    @staticmethod
+    def spectrogram_augment(spectrogram, masking_val='min', n_freq_masks=1, n_time_masks=1, max_mask_pct=0.1):
+        _, n_mels, n_frames = spectrogram.shape
+        aug_spectrogram = spectrogram.clone()
+
+        if masking_val == 'min':
+            masking_val = aug_spectrogram.min()
+        elif masking_val == 'max':
+            masking_val = aug_spectrogram.max()
+        elif masking_val == 'mean':
+            masking_val = aug_spectrogram.mean()
+        elif masking_val == 'median':
+            masking_val = aug_spectrogram.median()
+        elif masking_val == 'random':
+            masking_val = random.random() * (aug_spectrogram.max() - aug_spectrogram.min()) + aug_spectrogram.min()
+        elif type(masking_val) == int or type(masking_val) == float:
+            masking_val = torch.tensor(masking_val)
+
+        freq_mask_param = int(n_mels * max_mask_pct)
+        for _ in range(n_freq_masks):
+            aug_spectrogram = torchaudio.transforms.FrequencyMasking(freq_mask_param)(aug_spectrogram, masking_val)
+
+        time_mask_param = int(n_frames * max_mask_pct)  
+        for _ in range(n_time_masks):
+            aug_spectrogram = torchaudio.transforms.TimeMasking(time_mask_param)(aug_spectrogram, masking_val)
+
+        return aug_spectrogram 
+
 class CoughDataset(Dataset):
     def __init__(self, 
                  df, 
@@ -135,7 +163,7 @@ class CoughDataset(Dataset):
                  augment_masking_val='min',
                  n_freq_masks=2,
                  n_time_masks=1,
-                 max_mask_pct=0.1,):
+                 max_mask_pct=0.1):
         super().__init__()
         
         self.df = df
@@ -157,6 +185,7 @@ class CoughDataset(Dataset):
         
         self.label_encoder = preprocessing.LabelEncoder()
         self.label_encoder.fit(self.df['status'])
+        self.num_class = len(self.label_encoder.classes_)
         
         self.class_counts = self.df['status'].value_counts().to_dict()
         
