@@ -12,7 +12,12 @@ The hand-in report contains two parts: a short data exploration and a short repo
 Computer Engineering, 8th semester, Aalborg University
 
 
-**Authors**:
+## Installing the requirements
+
+```pip install -r requirements.txt```
+
+
+## Authors
 
 - Axel Toft
 - Kaj Mørk
