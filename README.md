@@ -28,3 +28,6 @@ Computer Engineering, 8th semester, Aalborg University
 - Lukas Kristensen
 - Máté Tallósi
 - Tudor-Razvan Tatar
+
+
+https://github.com/CE8-ComputerEng/Deep-Learning-Mini-Project
