@@ -1,3 +1,4 @@
+import os
 import glob
 import random
 import pandas as pd
@@ -12,7 +13,7 @@ from sklearn import preprocessing
 class AudioUtils():
     @staticmethod
     def get_audio_file(uuid, data_path):
-        results = glob.glob(data_path + uuid + '.*')
+        results = glob.glob(os.path.join(data_path, uuid + '.*'))
         for result in results:
             ext = result.split('.')[1]
             if ext in ['ogg', 'webm']:

@@ -25,3 +25,24 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
         plt.savefig(filename)
     
     plt.show()
+    
+    
+def plot_audio_waveform(signal, sample_rate, title='Audio waveform', filename=None):
+    NUM_TICKS = 10
+    
+    plt.figure(figsize=(10, 5))
+
+    plt.plot(signal)
+
+    plt.title(title)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Amplitude')
+    plt.xticks(np.linspace(0, len(signal), NUM_TICKS), [f'{t:.2f}' for t in np.linspace(0, len(signal) / sample_rate, NUM_TICKS)])
+    plt.grid()
+
+    plt.show()
+
+    if filename:
+        plt.savefig(filename)
+    
+    plt.show()
