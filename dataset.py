@@ -132,7 +132,8 @@ class CoughDataset(Dataset):
                  top_db=80,
                  n_freq_masks=2,
                  n_time_masks=1,
-                 max_mask_pct=0.1):
+                 max_mask_pct=0.1,
+                 augment=False):
         super().__init__()
         
         self.df = df
@@ -148,6 +149,7 @@ class CoughDataset(Dataset):
         self.n_fft = n_fft
         self.top_db = top_db
         
+        self.augment = augment
         self.augment_masking_val = 'min'
         self.n_freq_masks = n_freq_masks
         self.n_time_masks = n_time_masks
@@ -171,7 +173,8 @@ class CoughDataset(Dataset):
         signal = AudioUtils.resize(signal, self.duration, self.sample_rate)
 
         spectrogram = AudioUtils.get_spectrogram(signal, self.sample_rate, self.spectrogram_type, self.n_mels, self.n_fft, self.top_db)
-        spectrogram = AudioUtils.spectrogram_augment(spectrogram, self.augment_masking_val, self.n_freq_masks, self.n_time_masks, self.max_mask_pct)
+        if self.augment:
+            spectrogram = AudioUtils.spectrogram_augment(spectrogram, self.augment_masking_val, self.n_freq_masks, self.n_time_masks, self.max_mask_pct)
         
         label_id = self.label_encoder.transform([row['status']])[0]
         
