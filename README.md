@@ -29,5 +29,6 @@ Computer Engineering, 8th semester, Aalborg University
 - Máté Tallósi
 - Tudor-Razvan Tatar
 
+<br>
 
 https://github.com/CE8-ComputerEng/Deep-Learning-Mini-Project
