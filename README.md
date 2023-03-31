@@ -2,6 +2,8 @@
 
 An Covid-19 cough classifier using deep learning. The project is based on the [Covid-19 Cough Audio Classification Dataset](https://www.kaggle.com/datasets/andrewmvd/covid19-cough-audio-classification)
 
+<br>
+
 ## Mini Project Report
 
 The hand-in report contains two parts: a short data exploration and a short report on the model and results.
@@ -11,11 +13,13 @@ The hand-in report contains two parts: a short data exploration and a short repo
 
 Computer Engineering, 8th semester, Aalborg University
 
+<br>
 
 ## Installing the requirements
 
 ```pip install -r requirements.txt```
 
+<br>
 
 ## Authors
 
